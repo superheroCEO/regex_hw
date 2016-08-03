@@ -1,0 +1,8 @@
+Regex HW
+
+Read regex chapter in Automating Python   [70% done w/comprehension]
+
+
+Parse access.log file(attached) for 400 level and 500 level errors using Python. Print every line out to standard out that contains that line.
+
+Upload that script to your github profile

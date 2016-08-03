@@ -1,0 +1,100 @@
+Dev Ops HW Q's
+
+Week 1
+
+What's a virtual machine? What's the difference between a Container & a VM?
+Virtual machines include the application, the necessary binaries and libraries, and an entire guest operating system -- all of which can amount to tens of GBs.
+Containers include the application and all of its dependencies --but share the kernel with other containers, running as isolated processes in user space on the host operating system. Docker containers are not tied to any specific infrastructure: they run on any computer, on any infrastructure, and in any cloud.
+
+What command/s can you run to show all the processes running on a system?
+ps -e 		ps -A
+
+What's the difference between a root account and a regular one? What are different methods for running commands using the powers of the root/admin account?
+root is the user name or account that by default has access to all commands and files.This root account is in effect the ultimate super user and can change anything on the system. Regular users of our systems consist of (3) types: administrators, normal users and guest. Administrators can make major changes to the system while normal users can not. The guest account is used to provide casual access to someone (to play a game, surf the web, etc.) without giving them access to other users files. Any files they create are automatically removed when they log out. 
+Sudo, the one command to rule them all.  It stands for “super user do!”  If you prefix “sudo” with any linux command, it will run that command with elevated privileges.  Elevated privileges are required to perform certain administrative tasks. Sudo gives us safe elevated privileges when we want to run important commands. 
+sudo –b will run the command in the background.  This is useful for commands that display a lot of output as they are running.
+sudo –s will run the shell specified with elevated privileges, giving you the # prompt (don’t forget to exit!)
+sudo su – will make you the root user and load your custom user environment variables.
+You have two folders on a server that look similar (# of files, sizes) but there are too many files for you to inspect them individually. How would you go about figuring all the differences?
+diff -rq <folder1> <folder2>
+
+How do you stop a running process? How do you do it safely vs immediately?
+Control c
+“kill a process == sig term”
+
+Week 2
+
+What happens when you type www.google.com in the browser address bar and hit enter?
+Parse URL: 		The browser now has the following information contained in the URL (Uniform Resource Locator): Protocol "http" (Use 'Hyper Text Transfer Protocol'), Resource "/" (Retrieve main index page)
+Is it a URL or a search term?		When no protocol or valid domain name is given, the browser proceeds to feed the text given in the address box to the browser's default web search engine. In many cases the url has a special piece of text appended to it to tell the search engine that it came from a particular browser's url bar.
+Check HSTS list:		The browser checks its "preloaded HSTS (HTTP Strict Transport Security)” list. This is a list of websites that have requested to be contacted via HTTPS only. If the website is in the list, the browser sends its request via HTTPS instead of HTTP. Otherwise, the initial request is sent via HTTP.
+DNS lookup:			Browser checks if the domain is in its cache.
+If not found, the browser calls gethostbyname library function (varies by OS) to do the lookup.
+gethostbyname checks if the hostname can be resolved by reference in the local hosts file (whose location varies by OS) before trying to resolve the hostname through DNS.
+If gethostbyname does not have it cached nor can find it in the hosts file then it makes a request to the DNS server configured in the network stack. This is typically the local router or the ISP's caching DNS server.
+If the DNS server is on the same subnet the network library follows the ARP process below for the DNS server.
+If the DNS server is on a different subnet, the network library follows the ARP process below for the default gateway IP.
+turns URL into an IP address 
+ARP process		In order to send an ARP broadcast the network stack library needs the target IP address to look up. It also needs to know the MAC address of the interface it will use to send out the ARP broadcast. The ARP cache is first checked for an ARP entry for our target IP. If it is in the cache, the library function returns the result: Target IP = MAC.
+Opening of a socket		Once the browser receives the IP address of the destination server, it takes that and the given port number from the URL, and makes a call to the system library function named socket and requests a TCP socket stream
+		At this point the packet is ready to be transmitted through either: ethernet, WiFi, Cellular data network. → TLS Handshake (SYN/SYN-ACK-SYN)
+
+HTTP Protocol		
+HTTP Request to response		The HTTPD (HTTP Daemon) server is the one handling the requests/responses on the server side. The most common HTTPD servers are Apache or nginx for Linux and IIS for Windows.
+The server breaks down the request to the following parameters:
+HTTP Request Method (either GET, POST, HEAD, PUT and DELETE). In the case of a URL entered directly into the address bar, this will be GET.
+Domain, in this case - google.com.
+Requested path/page, in this case - / (as no specific path/page was requested, / is the default path).
+The server verifies that there is a Virtual Host configured on the server that corresponds with google.com. The server verifies that google.com can accept GET requests. The server verifies that the client is allowed to use this method (by IP, authentication, etc.). If the server has a rewrite module installed (like mod_rewrite for Apache or URL Rewrite for IIS), it tries to match the request against one of the configured rules. If a matching rule is found, the server uses that rule to rewrite the request. The server goes to pull the content that corresponds with the request, in our case it will fall back to the index file, as "/" is the main file (some cases can override this, but this is the most common method). The server parses the file according to the handler. If Google is running on PHP, the server uses PHP to interpret the index file, and streams the output to the client.
+How would you check to see if a specific port at an IP address is available? How might you figure out all the ports that are open for a TCP connection?
+Ping?
+You can't ping ports, as Ping is using ICMP which doesn't have the concept of ports. Ports belong to the transport layer protocols like TCP and UDP. However, you could use nmap to see whether ports are open or not
+		nmap -p 80 example.com
+
+What is the difference between TCP and UDP? When would you use either option?
+UDP is message oriented, while TCP is stream oriented. 
+TCP is a Transmission Control Protocol that deals with establishing a connection between computers before any data is being sent; it acts the highway for data packets being sent back & forth used by various protocols such at HTTP or FTP; TCP also sorts out data packet receive order.   
+Transmission Control Protocol (TCP) is a Transport Layer host-to-host protocol that provides reliable, connection-oriented communication over IP networks between two endpoints. TCP uses virtual ports to create a virtual end-to-end connection that can reuse the physical connections between two computers
+TCP 'rides' on top of Internet Protocol (IP) in the protocol stack, which is why the combined pair of Internet protocols is called TCP/IP (TCP over IP). TCP segments are passed inside the payload section of the IP packets. IP handles IP addressing and routing and gets the packets from one place to another, but TCP manages the actual communication sockets between endpoints (computers at either end of the network or internet connection).
+User Datagram Protocol (UDP) is a protocol used for transport of data across an Internet Protocol (IP) based network. User Datagram Protocol (UDP) does not perform handshaking as TCP does, or check for errors, or even to see if the transmitted data was received, so User Datagram Protocol (UDP) is referred to as an unreliable, connectionless protocol. However, because User Datagram Protocol (UDP) skips the handshaking and is focused on pure transmission, User Datagram Protocol (UDP) has lower overhead and is thus faster than TCP. UDP will provide better throughput on a network where the physical and datalink layer protocols are reliable.
+UDP is connectionless; UDP doesn't establish connections as TCP does, so UDP doesn’t perform this 3-way handshake and for this reason, it is referred to as an unreliable protocol. That doesn't mean UDP can't transfer data, it just doesn't negotiate how the connection will work, UDP just transmits and hopes for the best.
+Domain Name Service, Trivial File Transfer Protocol and Simple Network Management Protocol all use User Datagram Protocol (UDP).
+The purpose of UDP is to break up a stream of data into datagrams, add a source and destination port information, a length and a checksum. It is the receiving application's responsibility to detect and recover lost or damaged packets, as UDP doesn't take care of this.
+You can think of UDP as riding "inside" IP. The networking layer protocol IP handles packet ordering, segmentation and re-assembly, as well as the routing between the source and destination computer systems.
+To establish a connection, each device must send a SYN and receive an ACK for it from the other device. Thus, conceptually, we need to have four control messages pass between the devices. However, it's inefficient to send a SYN and an ACK in separate messages when one could communicate both simultaneously. Thus, in the normal sequence of events in connection establishment, one of the SYNs and one of the ACKs is sent together by setting both of the relevant bits (a message sometimes called a SYN+ACK). This makes a total of three messages, and for this reason the connection procedure is called a three-way handshake.
+Key Concept: The normal process of establishing a connection between a TCP client and server involves three steps: the client sends a SYN message; the server sends a message that combines an ACK for the client’s SYN and contains the server’s SYN; and then the client sends an ACK for the server’s SYN. 
+
+How do two servers establish a TCP connection between themselves? What's the 3 way handshake?
+K
+method used in a TCP/IP network to create a connection between a local host/client and server. It’s a three-step method that requires both the client and server to exchange SYN and ACK (acknowledgment) packets before actual data communication begins. Also known as a TCP handshake.
+A three-way-handshake is primarily used to create a TCP socket connection. It works when: 
+A client node sends a SYN data packet over an IP network to a server on the same or an external network. The objective of this packet is to ask/infer if the server is open for new connection.
+The target server must have open ports that can accept and initiate new connections. When the server receives the SYN packet from the client node, it responds and returns a confirmation receipt - the ACK packet or SYN/ACK packet.
+The client node receives the SYN/ACK from the server and responds with an ACK packet.
+Upon completion of this process, the connection is created and the host and server can communicate.
+Technically known as the SYN, SYN-ACK, ACK sequence, process in which two communication partners synchronize during the establishment of a connection. 
+Alice first says, “hello” to indicate to Bob that she wants to talk with him. Bob replies with a “hello” to indicate that he is willing to talk. Alice further sends some message to confirm to Bob that communication will take place and that the initial “hello” was not just a passing greeting.
+designed to overcome unreliable communication streams, such as those found in cellular phone conversation when streams of conversation bits are lost; provides some security against people trying to spoof connections
+two scenarios where a three-way handshake will take place:
+Establishing a connection (an active open)
+Terminating a connection (an active close)
+is the method used by TCP set up a TCP/IP connection over an Internet Protocol based network. TCP's three way handshaking technique is often referred to as "SYN-SYN-ACK" (or more accurately SYN, SYN-ACK, ACK) because there are three messages transmitted by TCP to negotiate and start a TCP session between two computers. TCP handshaking mechanism is designed so that two computers attempting to communicate can negotiate the parameters of the network TCP socket connection before transmitting data such as SSH and HTTP web browser requests.
+Host A sends a TCP SYNchronize packet to Host B
+Host B receives A's SYN
+Host B sends a SYNchronize-ACKnowledgement
+Host A receives B's SYN-ACK
+Host A sends ACKnowledge
+Host B receives ACK. 
+TCP socket connection is ESTABLISHED.
+
+
+SYN packet (synchronize) pocket = The first packet sent across the network when setting up a TCP connection. For example, when an individual contacts the University of Ontario Institute of Technology’s Website at http://www.uoit.ca, the first packet that the individual’s system sends is a SYN packet to the HTTP port 80 on www.uoit.ca. The browser tells the Web server that it wants to connect.
+Http	Used to transfer WWW data over the Internet. This is why all Website addresses begin with http://.
+
+How do you copy a file from one remote server to another? (List commands)
+To copy a file from B to A while logged into B: 
+scp /path/to/file
+
+What's two-factor authentication and what issues does it seek to address?
+??
+
